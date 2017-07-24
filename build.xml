@@ -1,0 +1,120 @@
+	<target name="destSelector">
+		<input
+			message="Enter Destination env:"
+			validargs="badger,turkey,panther,qa5,qa6,prod"
+			addproperty="sf.env"
+		/>
+		<switch value="${sf.env}">
+			<case value="badger">
+				<if>
+					<isset property="sf.badger.username"/>
+					<then>
+						<var name="sf.dest.username" value="${sf.badger.username}"/>
+					</then>
+				</if>
+				<if>
+					<isset property="sf.badger.password"/>
+					<then>
+						<var name="sf.dest.password" value="${sf.badger.password}"/>
+					</then>
+				</if>
+			</case>
+			<case value="turkey">
+				<if>
+					<isset property="sf.turkey.username"/>
+					<then>
+						<var name="sf.dest.username" value="${sf.turkey.username}"/>
+					</then>
+				</if>
+				<if>
+					<isset property="sf.badger.password"/>
+					<then>
+						<var name="sf.dest.password" value="${sf.turkey.password}"/>
+					</then>
+				</if>
+			</case>
+			<case value="panther">
+				<if>
+					<isset property="sf.panther.username"/>
+					<then>
+						<var name="sf.dest.username" value="${sf.panther.username}"/>
+					</then>
+				</if>
+				<if>
+					<isset property="sf.panther.password"/>
+					<then>
+						<var name="sf.dest.password" value="${sf.panther.password}"/>
+					</then>
+				</if>
+			</case>
+			<case value="qa5">
+				<if>
+					<isset property="sf.qa5.username"/>
+					<then>
+						<var name="sf.dest.username" value="${sf.qa5.username}"/>
+					</then>
+				</if>
+				<if>
+					<isset property="sf.qa5.password"/>
+					<then>
+						<var name="sf.dest.password" value="${sf.qa5.password}"/>
+					</then>
+				</if>
+			</case>
+			<case value="qa6">
+				<echo message="You chose QA6"/>				<if>
+					<isset property="sf.qa6.username"/>
+					<then>
+						<var name="sf.dest.username" value="${sf.qa6.username}"/>
+					</then>
+				</if>
+				<if>
+					<isset property="sf.qa6.password"/>
+					<then>
+						<var name="sf.dest.password" value="${sf.qa6.password}"/>
+					</then>
+				</if>
+			</case>
+			<case value="prod">
+				<if>
+					<isset property="sf.prod.username"/>
+					<then>
+						<var name="sf.dest.username" value="${sf.prod.username}"/>
+					</then>
+				</if>
+				<if>
+					<isset property="sf.prod.password"/>
+					<then>
+						<var name="sf.dest.password" value="${sf.prod.password}"/>
+					</then>
+				</if>
+			</case>
+			<default>
+				<echo message="Invalid selection"/>
+			</default>
+		</switch>
+		<if>
+			<not>
+				<isset property="sf.dest.username"/>
+			</not>
+			<then>
+				<input
+					message="sf.${sf.env}.username is not set in build.properties. Please enter a username:"
+					addproperty="sf.dest.username"
+				/>
+			</then>
+		</if>
+		<if>
+			<not>
+				<isset property="sf.dest.password"/>
+			</not>
+			<then>
+				<input
+					message="sf.${sf.env}.password is not set in build.properties. Please enter a password:"
+					addproperty="sf.dest.password"
+				/>
+			</then>
+		</if>
+		<echo message="${sf.dest.username}"/>
+		<echo message="${sf.dest.password}"/>
+	</target>

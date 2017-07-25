@@ -1,9 +1,166 @@
+<project name="Build Scripts" default="test" basedir="." xmlns:sf="antlib:com.salesforce">
+
+    <property file="build.properties"/>
+    <property environment="env"/>
+
+    <!-- Setting default value for username, password and session id properties to empty string 
+         so unset values are treated as empty. Without this, ant expressions such as ${sf.username}
+         will be treated literally.
+    -->
+    <condition property="sf.username" value=""> <not> <isset property="sf.username"/> </not> </condition>
+    <condition property="sf.password" value=""> <not> <isset property="sf.password"/> </not> </condition>
+    <condition property="sf.sessionId" value=""> <not> <isset property="sf.sessionId"/> </not> </condition>
+
+    <taskdef resource="com/salesforce/antlib.xml" uri="antlib:com.salesforce">
+        <classpath>
+            <pathelement location="../ant-salesforce.jar" />        	
+        </classpath>
+    </taskdef>
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+	
+	<target name="sourceSelector">
+		<echo message="${sf.env}"/>
+		<if>
+			<not>
+				<isset property="sf.env"/>
+			</not>
+			<then>
+				<input
+					message="Enter env:"
+					validargs="badger,turkey,panther,qa5,qa6,prod,new"
+					addproperty="sf.env"
+				/>
+			</then>
+		</if>
+		<switch value="${sf.env}">
+			<case value="badger">
+				<if>
+					<isset property="sf.badger.username"/>
+					<then>
+						<var name="sf.source.username" value="${sf.badger.username}"/>
+					</then>
+				</if>
+				<if>
+					<isset property="sf.badger.password"/>
+					<then>
+						<var name="sf.source.password" value="${sf.badger.password}"/>
+					</then>
+				</if>
+			</case>
+			<case value="turkey">
+				<if>
+					<isset property="sf.turkey.username"/>
+					<then>
+						<var name="sf.source.username" value="${sf.turkey.username}"/>
+					</then>
+				</if>
+				<if>
+					<isset property="sf.badger.password"/>
+					<then>
+						<var name="sf.source.password" value="${sf.turkey.password}"/>
+					</then>
+				</if>
+			</case>
+			<case value="panther">
+				<if>
+					<isset property="sf.panther.username"/>
+					<then>
+						<var name="sf.source.username" value="${sf.panther.username}"/>
+					</then>
+				</if>
+				<if>
+					<isset property="sf.panther.password"/>
+					<then>
+						<var name="sf.source.password" value="${sf.panther.password}"/>
+					</then>
+				</if>
+			</case>
+			<case value="qa5">
+				<if>
+					<isset property="sf.qa5.username"/>
+					<then>
+						<var name="sf.source.username" value="${sf.qa5.username}"/>
+					</then>
+				</if>
+				<if>
+					<isset property="sf.qa5.password"/>
+					<then>
+						<var name="sf.source.password" value="${sf.qa5.password}"/>
+					</then>
+				</if>
+			</case>
+			<case value="qa6">
+				<echo message="You chose QA6"/>				<if>
+					<isset property="sf.qa6.username"/>
+					<then>
+						<var name="sf.source.username" value="${sf.qa6.username}"/>
+					</then>
+				</if>
+				<if>
+					<isset property="sf.qa6.password"/>
+					<then>
+						<var name="sf.source.password" value="${sf.qa6.password}"/>
+					</then>
+				</if>
+			</case>
+			<case value="prod">
+				<if>
+					<isset property="sf.prod.username"/>
+					<then>
+						<var name="sf.source.username" value="${sf.prod.username}"/>
+					</then>
+				</if>
+				<if>
+					<isset property="sf.prod.password"/>
+					<then>
+						<var name="sf.source.password" value="${sf.prod.password}"/>
+					</then>
+				</if>
+				<var name="sf.serverurl" value="https://login.salesforce.com"/>
+			</case>
+			<default>
+				<echo message="New Environment Selected"/>
+			</default>
+		</switch>
+		<if>
+			<not>
+				<isset property="sf.source.username"/>
+			</not>
+			<then>
+				<input
+					message="sf.${sf.env}.username is not set in build.properties. Please enter a username:"
+					addproperty="sf.source.username"
+				/>
+			</then>
+		</if>
+		<if>
+			<not>
+				<isset property="sf.source.password"/>
+			</not>
+			<then>
+				<input
+					message="sf.${sf.env}.password is not set in build.properties. Please enter a password:"
+					addproperty="sf.source.password"
+				/>
+			</then>
+		</if>
+		<echo message="${sf.source.username}"/>
+		<echo message="${sf.source.password}"/>
+	</target>
+	
 	<target name="destSelector">
-		<input
-			message="Enter Destination env:"
-			validargs="badger,turkey,panther,qa5,qa6,prod"
-			addproperty="sf.env"
-		/>
+		<if>
+			<not>
+				<isset property="sf.env"/>
+			</not>
+			<then>
+				<input
+					message="Enter env:"
+					validargs="badger,turkey,panther,qa5,qa6,prod,new"
+					addproperty="sf.env"
+				/>
+			</then>
+		</if>
 		<switch value="${sf.env}">
 			<case value="badger">
 				<if>
@@ -62,7 +219,8 @@
 				</if>
 			</case>
 			<case value="qa6">
-				<echo message="You chose QA6"/>				<if>
+				<echo message="You chose QA6"/>				
+				<if>
 					<isset property="sf.qa6.username"/>
 					<then>
 						<var name="sf.dest.username" value="${sf.qa6.username}"/>
@@ -88,9 +246,10 @@
 						<var name="sf.dest.password" value="${sf.prod.password}"/>
 					</then>
 				</if>
+				<var name="sf.serverurl" value="https://login.salesforce.com"/>
 			</case>
 			<default>
-				<echo message="Invalid selection"/>
+				<echo message="New environment selected"/>
 			</default>
 		</switch>
 		<if>
@@ -118,3 +277,34 @@
 		<echo message="${sf.dest.username}"/>
 		<echo message="${sf.dest.password}"/>
 	</target>
+	
+	<target name="retrieveUnpackaged">
+		<if>
+			<isset property="sf.env"/>
+			<then>
+				<var name="sf.sourceDir" value="${sf.env}/${sf.targetDir}"/>
+			</then>
+			<else>
+				<var name="sf.sourceDir" value="${sf.targetDir}"/>
+			</else>
+		</if>
+		<if>
+			<not>
+				<isset property="sf.manifest"/>
+			</not>
+			<input
+				message="Please enter the location of your package.xml file (absolute or relative to CWD):"
+				addproperty="sf.manifest"
+			/>
+		</if>
+		<echo message="${sf.sourceDir}"/>
+		<mkdir dir="${sf.sourceDir}"/>
+		<!-- Retrieve the contents into another directory -->
+		<sf:retrieve username="${sf.source.username}" password="${sf.source.password}" sessionId="${sf.sessionId}" serverurl="${sf.serverurl}" maxPoll="${sf.maxPoll}" retrieveTarget="${sf.sourceDir}" unpackaged="${sf.manifest}"/>
+    </target>
+	
+	<target name="retrieveUnpackagedSelector" depends="sourceSelector,retrieveUnpackaged">
+		<echo message="Retrieve Unpackaged with Env Selector Run Complete"/>
+	</target>
+	
+</project>

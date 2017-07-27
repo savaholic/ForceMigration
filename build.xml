@@ -1,6 +1,6 @@
 <project name="Build Scripts" default="test" basedir="." xmlns:sf="antlib:com.salesforce">
 
-    <property file="build.properties"/>
+    <property file="../build.properties"/>
     <property environment="env"/>
 
     <!-- Setting default value for username, password and session id properties to empty string 
@@ -19,20 +19,19 @@
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
 	
 	<target name="sourceSelector">
-		<echo message="${sf.env}"/>
 		<if>
 			<not>
-				<isset property="sf.env"/>
+				<isset property="sf.source.env"/>
 			</not>
 			<then>
 				<input
 					message="Enter env:"
 					validargs="badger,turkey,panther,qa5,qa6,prod,new"
-					addproperty="sf.env"
+					addproperty="sf.source.env"
 				/>
 			</then>
 		</if>
-		<switch value="${sf.env}">
+		<switch value="${sf.source.env}">
 			<case value="badger">
 				<if>
 					<isset property="sf.badger.username"/>
@@ -128,7 +127,7 @@
 			</not>
 			<then>
 				<input
-					message="sf.${sf.env}.username is not set in build.properties. Please enter a username:"
+					message="sf.${sf.source.env}.username is not set in build.properties. Please enter a username:"
 					addproperty="sf.source.username"
 				/>
 			</then>
@@ -139,7 +138,7 @@
 			</not>
 			<then>
 				<input
-					message="sf.${sf.env}.password is not set in build.properties. Please enter a password:"
+					message="sf.${sf.source.env}.password is not set in build.properties. Please enter a password:"
 					addproperty="sf.source.password"
 				/>
 			</then>
@@ -151,17 +150,17 @@
 	<target name="destSelector">
 		<if>
 			<not>
-				<isset property="sf.env"/>
+				<isset property="sf.dest.env"/>
 			</not>
 			<then>
 				<input
 					message="Enter env:"
 					validargs="badger,turkey,panther,qa5,qa6,prod,new"
-					addproperty="sf.env"
+					addproperty="sf.dest.env"
 				/>
 			</then>
 		</if>
-		<switch value="${sf.env}">
+		<switch value="${sf.dest.env}">
 			<case value="badger">
 				<if>
 					<isset property="sf.badger.username"/>
@@ -258,7 +257,7 @@
 			</not>
 			<then>
 				<input
-					message="sf.${sf.env}.username is not set in build.properties. Please enter a username:"
+					message="sf.${sf.dest.env}.username is not set in build.properties. Please enter a username:"
 					addproperty="sf.dest.username"
 				/>
 			</then>
@@ -269,7 +268,7 @@
 			</not>
 			<then>
 				<input
-					message="sf.${sf.env}.password is not set in build.properties. Please enter a password:"
+					message="sf.${sf.dest.env}.password is not set in build.properties. Please enter a password:"
 					addproperty="sf.dest.password"
 				/>
 			</then>
@@ -280,28 +279,53 @@
 	
 	<target name="retrieveUnpackaged">
 		<if>
-			<isset property="sf.env"/>
+			<isset property="sf.source.env"/>
 			<then>
-				<var name="sf.sourceDir" value="${sf.env}/${sf.targetDir}"/>
+				<var name="sf.source.dir" value="${sf.source.env}"/>
 			</then>
 			<else>
-				<var name="sf.sourceDir" value="${sf.targetDir}"/>
+				<input
+					message="Please enter the directory to store the downloaded code (absolute or relative to CWD):"
+					addproperty="sf.source.manifest"
+				/>
 			</else>
 		</if>
 		<if>
 			<not>
-				<isset property="sf.manifest"/>
+				<isset property="sf.source.manifest"/>
 			</not>
-			<input
-				message="Please enter the location of your package.xml file (absolute or relative to CWD):"
-				addproperty="sf.manifest"
-			/>
+			<then>
+				<input
+					message="Please enter the location of your package.xml file (absolute or relative to CWD):"
+					addproperty="sf.source.manifest"
+				/>
+			</then>
 		</if>
-		<echo message="${sf.sourceDir}"/>
-		<mkdir dir="${sf.sourceDir}"/>
-		<!-- Retrieve the contents into another directory -->
-		<sf:retrieve username="${sf.source.username}" password="${sf.source.password}" sessionId="${sf.sessionId}" serverurl="${sf.serverurl}" maxPoll="${sf.maxPoll}" retrieveTarget="${sf.sourceDir}" unpackaged="${sf.manifest}"/>
+		<echo message="${sf.source.dir}"/>
+		<mkdir dir="${sf.source.dir}"/>
+		<sf:retrieve username="${sf.source.username}" password="${sf.source.password}" sessionId="${sf.sessionId}" serverurl="${sf.serverurl}" maxPoll="${sf.maxPoll}" retrieveTarget="${sf.source.dir}" unpackaged="${sf.source.manifest}"/>
     </target>
+	
+	<!-- deploys code located in ${sf.dest.dir} to org defined by sf.dest.username and sf.dest.password -->
+	<target name="deployUnpackaged">
+		<if>
+			<isset property="sf.dest.env"/>
+			<then>
+				<var name="sf.dest.dir" value="${sf.dest.env}"/>
+			</then>
+			<else>
+				<var name="sf.dest.dir" value="${sf.targetDir}"/>
+			</else>
+		</if>
+		<echo message="${sf.dest.dir}"/>
+		<echo message="${sf.dest.username}"/>
+		<echo message="${sf.dest.password}"/>
+    <!--  <sf:deploy username="${sf.dest.username}" password="${sf.dest.password}" sessionId="${sf.sessionId}" serverurl="${sf.serverurl}" maxPoll="${sf.maxPoll}" deployRoot="${sf.dest.dir}" checkOnly="true" rollbackOnError="true"/> -->
+    </target>
+	
+	<target name="deployUnpackagedSelector" depends="destSelector,deployUnpackaged">
+		<echo message="Deploy Unpackaged with Env Selector Run Complete"/>
+	</target>
 	
 	<target name="retrieveUnpackagedSelector" depends="sourceSelector,retrieveUnpackaged">
 		<echo message="Retrieve Unpackaged with Env Selector Run Complete"/>

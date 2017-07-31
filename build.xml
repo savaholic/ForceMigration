@@ -281,12 +281,12 @@
 		<if>
 			<isset property="sf.source.env"/>
 			<then>
-				<var name="sf.source.dir" value="${sf.source.env}"/>
+				<var name="sf.source.dir" value="${sf.sourceHome}/${sf.source.env}"/>
 			</then>
 			<else>
 				<input
 					message="Please enter the directory to store the downloaded code (absolute or relative to CWD):"
-					addproperty="sf.source.manifest"
+					addproperty="sf.source.dir"
 				/>
 			</else>
 		</if>
@@ -308,15 +308,28 @@
 	
 	<!-- deploys code located in ${sf.dest.dir} to org defined by sf.dest.username and sf.dest.password -->
 	<target name="deployUnpackaged">
+		<!-- The below really should be a macro, but I need to figure out macros -->
+		<if>
+			<not>
+			<isset property="sf.sourceHome"/>
+			</not>
+			<then>
+				<input
+					message="Please enter the base dir for source (or set sf.sourceHome in conf):"
+					addproperty="sf.sourceHome"
+				/>
+			</then>
+		</if>
 		<if>
 			<isset property="sf.dest.env"/>
 			<then>
-				<var name="sf.dest.dir" value="${sf.dest.env}"/>
+				<var name="sf.dest.dir" value="${sf.sourceHome}/${sf.dest.env}"/>
 			</then>
 			<else>
-				<var name="sf.dest.dir" value="${sf.targetDir}"/>
+				<var name="sf.dest.dir" value="${sf.sourceHome}"/>
 			</else>
 		</if>
+		<-- macro should end here -->
 		<echo message="${sf.dest.dir}"/>
 		<echo message="${sf.dest.username}"/>
 		<echo message="${sf.dest.password}"/>

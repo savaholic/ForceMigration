@@ -1,6 +1,6 @@
 <project name="Build Scripts" default="test" basedir="." xmlns:sf="antlib:com.salesforce">
 
-    <property file="../build.properties"/>
+    <property file="./build.properties"/>
     <property environment="env"/>
 
     <!-- Setting default value for username, password and session id properties to empty string 
@@ -89,7 +89,8 @@
 				</if>
 			</case>
 			<case value="qa6">
-				<echo message="You chose QA6"/>				<if>
+				<echo message="You chose QA6"/>
+				<if>
 					<isset property="sf.qa6.username"/>
 					<then>
 						<var name="sf.source.username" value="${sf.qa6.username}"/>
@@ -301,8 +302,9 @@
 				/>
 			</then>
 		</if>
-		<echo message="${sf.source.dir}"/>
+		<echo message="Creating directory ${sf.source.dir}"/>
 		<mkdir dir="${sf.source.dir}"/>
+		<echo message="Pulling items listed in ${sf.source.manifest}"/>
 		<sf:retrieve username="${sf.source.username}" password="${sf.source.password}" sessionId="${sf.sessionId}" serverurl="${sf.serverurl}" maxPoll="${sf.maxPoll}" retrieveTarget="${sf.source.dir}" unpackaged="${sf.source.manifest}"/>
     </target>
 	
@@ -329,7 +331,7 @@
 				<var name="sf.dest.dir" value="${sf.sourceHome}"/>
 			</else>
 		</if>
-		<-- macro should end here -->
+		<!-- macro should end here -->
 		<echo message="${sf.dest.dir}"/>
 		<echo message="${sf.dest.username}"/>
 		<echo message="${sf.dest.password}"/>

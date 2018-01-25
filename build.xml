@@ -1,6 +1,7 @@
 <project name="Build Scripts" default="test" basedir="." xmlns:sf="antlib:com.salesforce">
 
     <property file="./build.properties"/>
+	<property file="/Program Files/Force Migration/sample/build.properties" />
     <property environment="env"/>
 
     <!-- Setting default value for username, password and session id properties to empty string 
@@ -26,7 +27,7 @@
 			<then>
 				<input
 					message="Enter env:"
-					validargs="badger,turkey,panther,qa5,qa6,prod,new"
+					validargs="badger,turkey,panther,qa5,qa6,qa7,prod,new"
 					addproperty="sf.source.env"
 				/>
 			</then>
@@ -103,6 +104,21 @@
 					</then>
 				</if>
 			</case>
+			<case value="qa7">
+				<echo message="You chose QA7"/>
+				<if>
+					<isset property="sf.qa7.username"/>
+					<then>
+						<var name="sf.source.username" value="${sf.qa7.username}"/>
+					</then>
+				</if>
+				<if>
+					<isset property="sf.qa7.password"/>
+					<then>
+						<var name="sf.source.password" value="${sf.qa7.password}"/>
+					</then>
+				</if>
+			</case>
 			<case value="prod">
 				<if>
 					<isset property="sf.prod.username"/>
@@ -145,7 +161,7 @@
 			</then>
 		</if>
 		<echo message="${sf.source.username}"/>
-		<echo message="${sf.source.password}"/>
+		<echo message="${sf.serverurl}"/>
 	</target>
 	
 	<target name="destSelector">
@@ -156,7 +172,7 @@
 			<then>
 				<input
 					message="Enter env:"
-					validargs="badger,turkey,panther,qa5,qa6,prod,new"
+					validargs="badger,turkey,panther,qa5,qa6,qa7,prod,new"
 					addproperty="sf.dest.env"
 				/>
 			</then>
@@ -233,6 +249,21 @@
 					</then>
 				</if>
 			</case>
+			<case value="qa7">
+				<echo message="You chose QA7"/>				
+				<if>
+					<isset property="sf.qa7.username"/>
+					<then>
+						<var name="sf.dest.username" value="${sf.qa7.username}"/>
+					</then>
+				</if>
+				<if>
+					<isset property="sf.qa7.password"/>
+					<then>
+						<var name="sf.dest.password" value="${sf.qa7.password}"/>
+					</then>
+				</if>
+			</case>
 			<case value="prod">
 				<if>
 					<isset property="sf.prod.username"/>
@@ -247,6 +278,8 @@
 					</then>
 				</if>
 				<var name="sf.serverurl" value="https://login.salesforce.com"/>
+				<var name="sf.checkOnlyBool" value="true"/>
+				<var name="sf.runTests" value="RunLocalTests"/>
 			</case>
 			<default>
 				<echo message="New environment selected"/>
@@ -275,14 +308,14 @@
 			</then>
 		</if>
 		<echo message="${sf.dest.username}"/>
-		<echo message="${sf.dest.password}"/>
+		<echo message="${sf.serverurl}"/>
 	</target>
 	
 	<target name="retrieveUnpackaged">
 		<if>
 			<isset property="sf.source.env"/>
 			<then>
-				<var name="sf.source.dir" value="${sf.sourceHome}/${sf.source.env}"/>
+				<var name="sf.source.dir" value="${sf.sourceHome}${sf.source.env}"/>
 			</then>
 			<else>
 				<input
@@ -325,7 +358,7 @@
 		<if>
 			<isset property="sf.dest.env"/>
 			<then>
-				<var name="sf.dest.dir" value="${sf.sourceHome}/${sf.dest.env}"/>
+				<var name="sf.dest.dir" value="${sf.sourceHome}${sf.dest.env}"/>
 			</then>
 			<else>
 				<var name="sf.dest.dir" value="${sf.sourceHome}"/>
@@ -334,15 +367,17 @@
 		<!-- macro should end here -->
 		<echo message="${sf.dest.dir}"/>
 		<echo message="${sf.dest.username}"/>
-		<echo message="${sf.dest.password}"/>
-    <!--  <sf:deploy username="${sf.dest.username}" password="${sf.dest.password}" sessionId="${sf.sessionId}" serverurl="${sf.serverurl}" maxPoll="${sf.maxPoll}" deployRoot="${sf.dest.dir}" checkOnly="true" rollbackOnError="true"/> -->
+		<echo message="${sf.serverurl}"/>
+		<echo message="${sf.checkOnlyBool}"/>
+		<echo message="${sf.runTests}"/>
+		<sf:deploy username="${sf.dest.username}" password="${sf.dest.password}" sessionId="${sf.sessionId}" serverurl="${sf.serverurl}" maxPoll="${sf.maxPoll}" deployRoot="${sf.dest.dir}" checkOnly="${sf.checkOnlyBool}" testLevel="${sf.runTests}" rollbackOnError="true"/>
     </target>
 	
-	<target name="deployUnpackagedSelector" depends="destSelector,deployUnpackaged">
+	<target name="dus" depends="destSelector,deployUnpackaged">
 		<echo message="Deploy Unpackaged with Env Selector Run Complete"/>
 	</target>
 	
-	<target name="retrieveUnpackagedSelector" depends="sourceSelector,retrieveUnpackaged">
+	<target name="rus" depends="sourceSelector,retrieveUnpackaged">
 		<echo message="Retrieve Unpackaged with Env Selector Run Complete"/>
 	</target>
 </project>

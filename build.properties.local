@@ -1,0 +1,6 @@
+sf.sourceRoot = ${user.dir}/
+sf.sourceHome = ${sf.sourceRoot}
+sf.source.manifest = ${sf.sourceRoot}package.xml
+sf.checkOnlyBool = false
+#sf.runTests = RunLocalTests
+sf.runTests = NoTestRun
